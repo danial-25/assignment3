@@ -72,7 +72,7 @@ def patients_with_diseases(request):
             ds = DiseaseSerializer(d)
             d_info.append(ds.data)
 
-        # Append each patient's data
+
         data.append(
             {
                 "patient": ps.data,
@@ -97,7 +97,7 @@ def view_discoveries(request, country):
 @permission_classes([AllowAny])
 def view_records(request, check):
 
-    if "@" in check:  # Basic email validation
+    if "@" in check:  
         records = Record.objects.filter(email=check)
     else:
         records = Record.objects.filter(cname=check)
@@ -145,9 +145,7 @@ def create_record(request):
             if response.status_code == 200:
                 response_data = response.json()
                 try:
-                    population = response_data.get("data")["populationCounts"][-1][
-                        "value"
-                    ]
+                    population = response_data.get("data")["populationCounts"][-1]["value"]
                     country = Country.objects.create(cname=cname, population=population)
                 except (KeyError, IndexError):
                     return Response(
@@ -158,7 +156,7 @@ def create_record(request):
                     )
             else:
                 return Response(
-                    {"error": "Request to external API failed."},
+                    {"error": "Request failed."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         disease = Disease.objects.filter(disease_code=disease_code).first()
@@ -168,7 +166,6 @@ def create_record(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Validate total deaths and total patients
         if not total_deaths or not total_patients:
             return Response(
                 {"error": "Total deaths and total patients are required."},
