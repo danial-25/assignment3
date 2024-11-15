@@ -23,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-!%3_)!hxr(00(dy^0guau5&vm@2isa0pkvc8cjxft4b)zotu6w"
+SECRET_KEY = config["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -56,6 +56,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "assignment3.urls"
+
 
 TEMPLATES = [
     {
@@ -85,7 +86,6 @@ DATABASES = {
     #     "NAME": BASE_DIR / "db.sqlite3",
     # }
     "default": dj_database_url.parse(config["DATABASE_URL"])
-    
 }
 
 
