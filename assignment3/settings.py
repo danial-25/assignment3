@@ -37,9 +37,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-SESSION_COOKIE_DOMAIN = ".assignment3-7egp.onrender.com"
-SESSION_COOKIE_SAMESITE = "None"  # For cross-domain cookies
-SESSION_COOKIE_SECURE = False
 
 # Application definition
 

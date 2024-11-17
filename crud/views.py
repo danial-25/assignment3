@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from .models import *
 from django.shortcuts import get_object_or_404
@@ -12,7 +12,7 @@ import requests
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Users
@@ -22,7 +22,7 @@ from .serializers import UsersSerializer
 class UserView(APIView):
     def get_permissions(self):
         if self.request.method in ["PUT", "DELETE"]:
-            return [IsAuthenticated()]
+            return [IsAdminUser()]
         return [AllowAny()]
 
     def get(self, request, email):
@@ -48,7 +48,7 @@ class UserView(APIView):
 class CountryView(APIView):
     def get_permissions(self):
         if self.request.method in ["POST"]:
-            return [IsAuthenticated()]
+            return [IsAdminUser()]
         return [AllowAny()]
 
     def get(self, request):
@@ -77,6 +77,7 @@ def create_user(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def patients_with_diseases(request):
+    print(request.user)
     email = request.query_params.get("email")
     is_public_servant = Publicservant.objects.filter(email=email).exists()
     is_doctor = Doctor.objects.filter(email=email).exists()
