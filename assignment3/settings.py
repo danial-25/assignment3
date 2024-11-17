@@ -30,7 +30,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["https://assignment3-7egp.onrender.com"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://assignment3-7egp.onrender.com",
+    "http://127.0.0.1",
+    "http://localhost",
+]
+
+
+SESSION_COOKIE_DOMAIN = ".assignment3-7egp.onrender.com"
+SESSION_COOKIE_SAMESITE = "None"  # For cross-domain cookies
+SESSION_COOKIE_SECURE = False
+
 # Application definition
 
 INSTALLED_APPS = [
