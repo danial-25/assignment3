@@ -24,3 +24,24 @@ class DiscoverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Discover
         fields = ["cname", "disease_code", "first_enc_date"]
+
+
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = ["cname", "population"]
+
+
+class DiseasetypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Diseasetype
+        fields = ["id", "description"] 
+
+
+class SpecializeSerializer(serializers.ModelSerializer):
+    doctor = UsersSerializer(source='email.email')
+    disease_type = DiseasetypeSerializer(source='disease')
+
+    class Meta:
+        model = Specialize
+        fields = ['doctor', 'disease_type']

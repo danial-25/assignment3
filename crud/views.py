@@ -10,24 +10,58 @@ from rest_framework import status
 import requests
 
 
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def user_info(request):
-    email = request.query_params.get("email")
-    user = get_object_or_404(Users, email=email)
-    serializer = UsersSerializer(user)
-    return Response(serializer.data)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .models import Users
+from .serializers import UsersSerializer
 
 
-@api_view(["PUT"])
-@permission_classes([IsAdminUser])
-def update_user(request, email):
-    user = get_object_or_404(Users, email=email)
-    serializer = UsersSerializer(user, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
+class UserView(APIView):
+    def get_permissions(self):
+        if self.request.method in ["PUT", "DELETE"]:
+            return [IsAdminUser()]
+        return [AllowAny()]
+
+    def get(self, request, email):
+        # email = request.query_params.get("email")
+        user = get_object_or_404(Users, email=email)
+        serializer = UsersSerializer(user)
         return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, email):
+        user = get_object_or_404(Users, email=email)
+        serializer = UsersSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, email):
+        user = get_object_or_404(Users, email=email)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CountryView(APIView):
+    def get_permissions(self):
+        if self.request.method in ["POST"]:
+            return [IsAdminUser()]
+        return [AllowAny()]
+
+    def get(self, request):
+        countries = Country.objects.all()
+        serializer = CountrySerializer(countries, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = CountrySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
@@ -38,14 +72,6 @@ def create_user(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["DELETE"])
-@permission_classes([IsAdminUser])
-def delete_user(request, email):
-    user = get_object_or_404(Users, email=email)
-    user.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["GET"])
@@ -72,7 +98,6 @@ def patients_with_diseases(request):
             ds = DiseaseSerializer(d)
             d_info.append(ds.data)
 
-
         data.append(
             {
                 "patient": ps.data,
@@ -95,9 +120,17 @@ def view_discoveries(request, country):
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
+def specialize(request):
+    specialize_records = Specialize.objects.select_related("email", "disease").all()
+    serializer = SpecializeSerializer(specialize_records, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
 def view_records(request, check):
 
-    if "@" in check:  
+    if "@" in check:
         records = Record.objects.filter(email=check)
     else:
         records = Record.objects.filter(cname=check)
@@ -145,7 +178,9 @@ def create_record(request):
             if response.status_code == 200:
                 response_data = response.json()
                 try:
-                    population = response_data.get("data")["populationCounts"][-1]["value"]
+                    population = response_data.get("data")["populationCounts"][-1][
+                        "value"
+                    ]
                     country = Country.objects.create(cname=cname, population=population)
                 except (KeyError, IndexError):
                     return Response(
@@ -188,6 +223,3 @@ def create_record(request):
                 {"error": f"Error creating record: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-
-
